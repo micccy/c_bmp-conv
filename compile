@@ -1,2 +1,2 @@
-gcc -Wall -o deconv deconv.c
-gcc -Wall -o conv conv.c 
+gcc -Wall -o ./deconv ./src/deconv.c
+gcc -Wall -o ./conv ./src/conv.c

@@ -1,48 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "lib/struct.h"
 
 uint8_t *buffer;                                                            //Buffer to hold input data
 char *dump;                                                                 //Buffer to hold output data
 
-struct __attribute((__packed__)) h_def{
-    //File header
-    char signature[2];                                                      //"BM"
-    uint32_t fsize;                                                         //File size
-    uint16_t reserved[2];                                                   //Reserved
-    uint32_t offset;                                                        //Offset of pixel data
-    //DIB header
-    uint32_t hsize;                                                         //Size of *DIB* header
-     int32_t width;                                                         //bitmap width
-     int32_t height;                                                        //bitmap height
-    uint16_t planes;                                                        //number of color planes, must be 1
-    uint16_t bpp;                                                           //Bits per pixel
-    uint32_t compr;                                                         //Compression method and flags
-#define BI_RGB 0                                                            //  No compression
-#define BI_BITFIELDS 3                                                      //  Bitfields providd for colors
-    uint32_t isize;                                                         //Bitmap data size
-     int32_t hres;                                                          //Horizontal resolution in pixel per meter
-     int32_t vres;                                                          //Vertical resolution in pixel per meter
-    uint32_t ncol;                                                          //Number of colors in palette (0 to default)
-    uint32_t icnm;                                                          //Number of important colors, 0 to ignore
-    uint32_t rmsk;                                                          //Bit mask for red
-    uint32_t gmsk;                                                          //Bit mask for gree
-    uint32_t bmsk;                                                          //Bit mask for blue
-    uint32_t amsk;                                                          //Bit mask for alpha
-} *header;
+struct h_def *header;                                                       //Pointer to file header
 
-uint8_t *pix;
+uint8_t *pix;                                                               //Pointer to pixel table
 
-FILE *input,*output;                                                        //io stream pointers
-uint32_t insize;                                                            //file size
+uint32_t colnum;                                                            //Number of colors found
+struct c_def *head,**seek;                                                  //List of colors
 
-uint32_t t0,t1;
+FILE *input,*output;                                                        //IO stream pointers
+uint32_t insize;                                                            //File size
+struct s_def prsiz;                                                         //Printable file size
+const char magind[][4]={"B\0\0", "KiB", "MiB", "GiB"};                      //Text to display for each magnitude
 
-const char magind[][4]={"B\0\0", "KiB", "MiB", "GiB"};
-struct __attribute((__packed__)) s_def{
-    uint16_t mag   :  6;                                                    //Struct for typing out file sizes
-    uint16_t value : 10;
-} prsiz;
+uint32_t t0,t1;                                                             //tmp
 
 int main(int argc,char*argv[]){
     if((argc==2)||(argc==3)){
@@ -93,6 +69,7 @@ int main(int argc,char*argv[]){
                         printf("%idpi\n", (header->vres*127)/5000+((header->vres*127)%5000>2499?1:0));      //Print vertical resolution
 
                         //Parse file to find number of colors and create palette
+                        colnum=0;
 
                         //Find out size of output buffer and allocate it
 
@@ -113,16 +90,7 @@ int main(int argc,char*argv[]){
         }else printf("Can\'t open \'%s\'\n", argv[1]);
     }else printf("Invalid arguments\n");
 
-    printf("This tool can convert a bitmap image in a text file based format\n");
-    printf("which can then be used as a seed to generate other images\n\n");
-    printf("    usage: %s input_file [output_file]\n\n", argv[0]);
-    printf("The input file must be a (small) bitmap image file having at most\n");
-    printf("95 colors and at least a BITMAPINFOHEADER, if more colors are\n");
-    printf("present they will be united by similarity to reduce them\n\n");
-    printf("The output file will be a simple text delimited by \'#\' where\n");
-    printf("each character identifies one pixel\'s color and a palette\n");
-    printf("will then be provided below in RGBA format\n");
-    printf("This is meant to be used in making small retro icons etc");                                                                                //Print help
+    printf("%s", helpstr);                                                                                  //Print help
 
     return 1;                                                                                               //Exit - 1
 }
