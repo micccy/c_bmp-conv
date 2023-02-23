@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-uint8_t *buffer;
-char *dump;
+uint8_t *buffer;                                                            //Buffer to hold input data
+char *dump;                                                                 //Buffer to hold output data
 
 struct __attribute((__packed__)) h_def{
     //File header
@@ -33,8 +33,10 @@ struct __attribute((__packed__)) h_def{
 
 uint8_t *pix;
 
-FILE *input,*output;
-uint32_t temp,t0,insize;
+FILE *input,*output;                                                        //io stream pointers
+uint32_t insize;                                                            //file size
+
+uint32_t t0,t1;
 
 const char magind[][4]={"B\0\0", "KiB", "MiB", "GiB"};
 struct __attribute((__packed__)) s_def{
@@ -58,31 +60,32 @@ int main(int argc,char*argv[]){
                     header=(struct h_def*)buffer;                                                           //Set header pointer
                     if((header->height > 0)&&(header->planes==1)&&
                     (((header->compr==BI_RGB)&&(header->hsize>=24))||((header->compr==BI_BITFIELDS)&&
-                    (header->hsize>=52)))){                                                                 //Check if a sane file has been opened
+                    (header->hsize>=52)))&&((header->bpp==1)||(header->bpp==2)||(header->bpp==4)||
+                    (header->bpp==8)||(header->bpp==16)||(header->bpp==24)||(header->bpp==32))){            //Check if a sane file has been opened
                         prsiz.mag=0;
-                        temp=header->fsize;
-                        while(temp>1023){temp/=1024;prsiz.mag++;};
-                        prsiz.value=temp;
+                        t0=header->fsize;
+                        while(t0>1023){t0/=1024;prsiz.mag++;};
+                        prsiz.value=t0;
                         printf("\'%s\' %u%s, ",argv[1], prsiz.value, magind[prsiz.mag]);                    //Print name and size of opened file
-                        printf("%ix%i, %ubpp, ",header->width, header->height, header->bpp);                 //Print dimensions and bits per pixel
+                        printf("%ix%i, %ubpp, ",header->width, header->height, header->bpp);                //Print dimensions and bits per pixel
                         if(header->compr){                                                                  //If bitfields are specified, print them with RGBAX syntax
-                            temp=0;
-                            t0=32;
-                            for(int i=0;i<32;i++) temp+=((header->rmsk&(1<<i))?1:0);
-                            printf("%u.", temp);
-                            t0-=temp;
-                            temp=0;
-                            for(int i=0;i<32;i++) temp+=((header->gmsk&(1<<i))?1:0);
-                            printf("%u.", temp);
-                            t0-=temp;
-                            temp=0;
-                            for(int i=0;i<32;i++) temp+=((header->bmsk&(1<<i))?1:0);
-                            printf("%u.", temp);
-                            t0-=temp;
-                            temp=0;
-                            for(int i=0;i<32;i++) temp+=((header->amsk&(1<<i))?1:0);
-                            t0-=temp;
-                            printf("%u.%u, ", temp,t0);
+                            t0=0;
+                            t1=32;
+                            for(int i=0;i<32;i++) t0+=((header->rmsk&(1<<i))?1:0);
+                            printf("%u.", t0);
+                            t1-=t0;
+                            t0=0;
+                            for(int i=0;i<32;i++) t0+=((header->gmsk&(1<<i))?1:0);
+                            printf("%u.", t0);
+                            t1-=t0;
+                            t0=0;
+                            for(int i=0;i<32;i++) t0+=((header->bmsk&(1<<i))?1:0);
+                            printf("%u.", t0);
+                            t1-=t0;
+                            t0=0;
+                            for(int i=0;i<32;i++) t0+=((header->amsk&(1<<i))?1:0);
+                            t1-=t0;
+                            printf("%u.%u, ", t0,t1);
                         }
                         if(header->ncol) printf("%ucol, ", header->ncol);                                   //If not inferred from the bpp, print the number of colors
                         if(header->hres!=header->vres) printf("%ix", (header->hres*127)/5000+
