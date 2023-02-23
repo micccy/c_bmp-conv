@@ -32,7 +32,7 @@ struct __attribute((__packed__)) h_def{
 
 uint8_t *pix;
 
-FILE *input;
+FILE *input,*output;
 uint32_t temp,t0,insize;
 
 const char magind[][4]={"B\0\0", "KiB", "MiB", "GiB"};
@@ -42,7 +42,7 @@ struct __attribute((__packed__)) s_def{
 } prsiz;
 
 int main(int argc,char*argv[]){
-    if(argc==2){
+    if((argc==2)||(argc==3)){
         if((input=fopen(argv[1],"rb"))){                                                                    //Open input file
             buffer=malloc(6);
             fread(buffer,1,6,input);
@@ -89,16 +89,30 @@ int main(int argc,char*argv[]){
                         printf("%idpi\n", (header->vres*127)/5000+((header->vres*127)%5000>2499?1:0));      //Print vertical resolution
 
 
-                        free(buffer);                                                                       //Free buffer
-                        return 0;                                                                           //Exit - 0
-                    };
+                        if(argc==3) output=fopen(argv[2],"w");                                              //Open output file if it exists
+                        else output=stdout;
+                        if(output){
+
+                            if(argc==3) fclose(output);                                                     //Close output file
+                            free(buffer);                                                                   //Free buffer
+                            return 0;                                                                       //Exit - 0
+                        }else printf("Can\'t open \'%s\'\n", argv[2]);
+                    }else printf("Unrecognised data format\n");
                 }else{fclose(input);printf("Can\'t read \'%s\'\n", argv[1]);};                              //Close file and error out
                 free(buffer);                                                                               //Free buffer
             }else{fclose(input);free(buffer);printf("\'%s\' is not a bitmap file\n", argv[1]);};            //Close file, free buffer, error out
         }else printf("Can\'t open \'%s\'\n", argv[1]);
     }else printf("Invalid arguments\n");
 
-    printf("HELP (TODO)\n");                                                                                //Print help
+    printf("This tool can convert a bitmap image in a text file based format\n");
+    printf("which can then be used as a seed to generate other images\n\n");
+    printf("    usage: %s input_file [output_file]\n\n", argv[0]);
+    printf("The input file must be a (small) bitmap image file having at most\n");
+    printf("95 colors and at least a BITMAPINFOHEADER, if more colors are\n");
+    printf("present they will be united by similarity to reduce them\n\n");
+    printf("The output file will be a simple delimited text where each\n");
+    printf("character identifies one pixel\'s color\n");
+    printf("A palette will then be provided below in RGBA format\n\n");                                                                                //Print help
 
     return 1;                                                                                               //Exit - 1
 }
