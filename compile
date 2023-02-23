@@ -1,0 +1,2 @@
+gcc -Wall -o deconv deconv.c
+gcc -Wall -o conv conv.c 

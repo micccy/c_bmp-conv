@@ -1,5 +1,5 @@
-# Legacy repository
+# Basic bitmap conversion tools 
 
-**Standard disclaimer:** _this is some very old code of mine that cannot be trusted. I likely don't remember why it was created and it might not work as intended. However it may contain something useful for someone so here it is._
+**Standard disclaimer:** _this is some code of mine that was created for some very specific purpose and might not work as intended. However it may still be useful to someone so here it is._
 
-**Description:** Template for repositories containing legacy code
+**Description:** 'conv' is a tool designed to generate bitmap image files starting from a text based seed file, while 'deconv' can generate such seed starting from certain bitmap files. 
