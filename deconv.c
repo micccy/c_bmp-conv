@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 uint8_t *buffer;
+char *dump;
 
 struct __attribute((__packed__)) h_def{
     //File header
@@ -88,6 +89,9 @@ int main(int argc,char*argv[]){
                         ((header->hres*127)%5000>2499?1:0));                                                //If not equal to vertical, printorizontal resolution
                         printf("%idpi\n", (header->vres*127)/5000+((header->vres*127)%5000>2499?1:0));      //Print vertical resolution
 
+                        //Parse file to find number of colors and create palette
+
+                        //Find out size of output buffer and allocate it
 
                         if(argc==3) output=fopen(argv[2],"w");                                              //Open output file if it exists
                         else output=stdout;
@@ -95,8 +99,10 @@ int main(int argc,char*argv[]){
 
                             if(argc==3) fclose(output);                                                     //Close output file
                             free(buffer);                                                                   //Free buffer
+                            free(dump);
                             return 0;                                                                       //Exit - 0
                         }else printf("Can\'t open \'%s\'\n", argv[2]);
+                        free(dump);
                     }else printf("Unrecognised data format\n");
                 }else{fclose(input);printf("Can\'t read \'%s\'\n", argv[1]);};                              //Close file and error out
                 free(buffer);                                                                               //Free buffer
@@ -110,9 +116,10 @@ int main(int argc,char*argv[]){
     printf("The input file must be a (small) bitmap image file having at most\n");
     printf("95 colors and at least a BITMAPINFOHEADER, if more colors are\n");
     printf("present they will be united by similarity to reduce them\n\n");
-    printf("The output file will be a simple delimited text where each\n");
-    printf("character identifies one pixel\'s color\n");
-    printf("A palette will then be provided below in RGBA format\n\n");                                                                                //Print help
+    printf("The output file will be a simple text delimited by \'#\' where\n");
+    printf("each character identifies one pixel\'s color and a palette\n");
+    printf("will then be provided below in RGBA format\n");
+    printf("This is meant to be used in making small retro icons etc");                                                                                //Print help
 
     return 1;                                                                                               //Exit - 1
 }
