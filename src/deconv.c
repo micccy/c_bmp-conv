@@ -41,10 +41,13 @@ int main(int argc,char*argv[]){
 							if(header->bpp==1){
 								if(!(i%header->width)) printf("\n");
 								printf("%c", tcod.color?'X':'.');
+							}else if(header->bpp==4){
+								if(!(i%header->width)) printf("\n");
+								printf("%X", tcod.color);
 							}else{
 								printf("%03X=%02X.%02X.%02X.%02X ",i,tcod.red,tcod.green,tcod.blue,tcod.alpha);
 								if(i%10==9) printf("\n");
-							}
+							};
 						};
 						printf("\n");
 						//Parse file to find number of colors and create palette
