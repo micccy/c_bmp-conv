@@ -36,17 +36,20 @@ int main(int argc,char*argv[]){
 						printheader(header,argv[1]);														//Dump header
 
 						union c_uni tcod;
-						for(int i=0;i<(header->width*header->height);i++){
-							tcod=coloread(header,i);
-							if(header->bpp==1){
-								if(!(i%header->width)) printf("\n");
-								printf("%c", tcod.color?'X':'.');
-							}else if(header->bpp==4){
-								if(!(i%header->width)) printf("\n");
-								printf("%X", tcod.color);
-							}else{
-								printf("%03X=%02X.%02X.%02X.%02X ",i,tcod.red,tcod.green,tcod.blue,tcod.alpha);
-								if(i%10==9) printf("\n");
+						for(int i=header->height-1,j=0;i>=0;j++){
+							if(j>=header->width){j=0;i--;};
+							if(i>=0){ 
+								tcod=coloread(header,i*header->width+j);
+								if(header->bpp==1){
+									if(!j) printf("\n");
+									printf("%c", tcod.color?'X':'.');
+								}else if(header->bpp==4){
+									if(!j) printf("\n");
+									printf("%X", tcod.color);
+								}else{
+									if(!(j%10)) printf("\n");
+									printf("%03X=%02X.%02X.%02X.%02X ",i*header->width+j,tcod.red,tcod.green,tcod.blue,tcod.alpha);
+								};
 							};
 						};
 						printf("\n");
