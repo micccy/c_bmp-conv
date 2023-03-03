@@ -26,7 +26,7 @@ void pheader(struct h_def *h,char *filename){								//Dump info about the file
 	printf("\'%s\' %u%s, ",filename, prsiz.value, magind[prsiz.mag]);		//Print name and size of opened file
 	printf("%ix%i, %ubpp, ",h->width, h->height, h->bpp);					//Print dimensions and bits per pixel
 	if(h->compr){															//If bitfields are specified, print them with RGBAX syntax
-		for(j=0,b=(uint8_t*)&h->rmsk,t0=0,t1=32;j<4;j++,b+=4){
+		for(j=0,b=(uint8_t*)&h->rmsk,t0=0,t1=h->bpp;j<4;j++,b+=4){
 			rb=*b+(*(b+1)<<8)+(*(b+2)<<16)+(*(b+3)<<24);					//read like this to protect against misalignments
 			for(i=0;i<32;i++) t0+=((rb&(1<<i))?1:0);
 			printf("%u.", t0);
@@ -41,9 +41,9 @@ void pheader(struct h_def *h,char *filename){								//Dump info about the file
 	printf("%idpi\n", (h->vres*127)/5000+((h->vres*127)%5000>2499?1:0));	//Print vertical resolution
 };
 
-union c_uni rpixel(struct h_def *h,uint32_t pn){							//Read the value of a pixel
+uint32_t rpixel(struct h_def *h,uint32_t pn){								//Read the value of a pixel
 	uint8_t *p=((uint8_t*)h)+h->offset,o;									//Pointer to start of pixel array, in-byte offset
-	union c_uni code;														//Value to return
+	uint32_t colorcode;														//Value to return
 	uint64_t rowsize=((uint64_t)h->width*h->bpp);							//Size of row from header
 	if(rowsize%32) rowsize+=32;												//Rows always start on a 4 byte boundary
 	rowsize/=32;															//Number of dwords per row
@@ -51,10 +51,10 @@ union c_uni rpixel(struct h_def *h,uint32_t pn){							//Read the value of a pix
 	p+=rowsize*(pn/h->width);												//Start of current row
 	p+=((pn%h->width)*h->bpp)/8;											//Set pointer to first byte
 	o=((pn%h->width)*h->bpp)%8;												//Set offset in byte
-	code.color=*((uint32_t*)p);												//Read 4 bytes at pointed offset
-	if(h->bpp <8) code.color>>=(8-(h->bpp)-o);								//Pixels are stored from the most significant bit
-	code.color&=(((uint64_t)1<<(h->bpp))-1);								//Mask out other stuff
-	return code;
+	colorcode=*((uint32_t*)p);												//Read 4 bytes at pointed offset
+	if(h->bpp <8) colorcode>>=(8-(h->bpp)-o);								//Pixels are stored from the most significant bit
+	colorcode&=(((uint64_t)1<<(h->bpp))-1);									//Mask out other stuff
+	return colorcode;
 };
 
 union c_uni rpalette(struct h_def *h,uint32_t n){							//Convert a pixel value in a color

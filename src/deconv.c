@@ -39,7 +39,7 @@ int main(int argc,char*argv[]){
 						for(int i=header->height-1,j=0;i>=0;j++){
 							if(j>=header->width){j=0;i--;};
 							if(i>=0){ 
-								tcod=rpixel(header,i*header->width+j);
+								tcod.color=rpixel(header,i*header->width+j);
 								if(header->bpp==1){
 									if(!j) printf("\n");
 									printf("%c", tcod.color?'X':'.');
