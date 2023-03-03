@@ -33,13 +33,13 @@ int main(int argc,char*argv[]){
 					(header->hsize>=56))||((header->compr==BI_BITFIELDS)&&(header->hsize>=52)))&&
 					(((header->compr==BI_RGB)&&((header->bpp==1)||(header->bpp==2)||(header->bpp==4)||
 					(header->bpp==8)||(header->bpp==24)))||(header->bpp==16)||(header->bpp==32))){			//Check if a sane file has been opened
-						printheader(header,argv[1]);														//Dump header
+						pheader(header,argv[1]);															//Dump header
 
-						union c_uni tcod;
+						union c_uni tcod;																	//Dump bitmap (for testing)
 						for(int i=header->height-1,j=0;i>=0;j++){
 							if(j>=header->width){j=0;i--;};
 							if(i>=0){ 
-								tcod=coloread(header,i*header->width+j);
+								tcod=rpixel(header,i*header->width+j);
 								if(header->bpp==1){
 									if(!j) printf("\n");
 									printf("%c", tcod.color?'X':'.');
@@ -78,7 +78,7 @@ int main(int argc,char*argv[]){
 		}else printf("Can\'t open \'%s\'\n", argv[1]);
 	}else printf("Invalid arguments\n");
 
-	printhelp(argv[0]);																						//Print help
+	phelp(argv[0]);																							//Print help
 
 	return 1;																								//Exit - 1
 };
